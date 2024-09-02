@@ -1,11 +1,11 @@
-#include "scx_fifo.bpf.skel.h"
 #include <bpf/bpf.h>
 #include <scx/common.h>
 #include <stdio.h>
+#include "scx_fifo.bpf.skel.h"
 
 int handle_stats(void *ctx, void *data, size_t size)
 {
-        printf("%lu\n", *(unsigned long)data);
+        printf("%lu\n", *(unsigned long*)data);
         return 0;
 }
 
@@ -31,5 +31,6 @@ int main()
         }
 
         ring_buffer__free(rb);
+        bpf_link__destroy(link);
         scx_fifo__destroy(skel);
 }

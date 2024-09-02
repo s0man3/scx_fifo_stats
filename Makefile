@@ -10,4 +10,4 @@ all:
 	cp $(SCX_BIN)/* $(BIN)
 
 clean:
-	rm $(BIN)/*
+	rm $(BIN)/scx_*
