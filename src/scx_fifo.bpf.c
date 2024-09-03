@@ -1,6 +1,6 @@
 #include <scx/common.bpf.h>
 
-char _license[] SEC("liscense") = "GPL";
+char _license[] SEC("license") = "GPL";
 
 struct {
         __uint(type, BPF_MAP_TYPE_RINGBUF);
@@ -18,6 +18,8 @@ s32 BPF_STRUCT_OPS(fifo_select_cpu, struct task_struct *p, s32 prev_cpu, u64 wak
         cpu = scx_bpf_select_cpu_dfl(p, prev_cpu, wake_flags, &is_idle);
 
         event = bpf_ringbuf_reserve(&stats, sizeof(u64), 0);
+        if (!event)
+                return 0;
         *event = ((u64)p->pid << 32) + (u32)cpu;
         bpf_ringbuf_submit(event, 0);
 
@@ -26,6 +28,14 @@ s32 BPF_STRUCT_OPS(fifo_select_cpu, struct task_struct *p, s32 prev_cpu, u64 wak
 
 void BPF_STRUCT_OPS(fifo_enqueue, struct task_struct *p, u64 enq_flags)
 {
+        u64 *event;
+
+        event = bpf_ringbuf_reserve(&stats, sizeof(u64), 0);
+        if (!event)
+                return;
+        *event = (u64)p->pid;
+        bpf_ringbuf_submit(event, 0);
+
         scx_bpf_dispatch(p, SCX_DSQ_LOCAL, SCX_SLICE_DFL, 0);
 }
 
